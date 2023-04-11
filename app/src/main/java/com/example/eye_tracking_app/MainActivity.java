@@ -4,30 +4,24 @@ package com.example.eye_tracking_app;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
-import android.hardware.Camera;
-import android.net.Uri;
+import android.graphics.Bitmap;
+import android.graphics.PointF;
 import android.os.Bundle;
 
 
 import android.util.Log;
-import android.view.View;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.camera.core.CameraX;
 //import androidx.camera.mlkit.vision.MlKitAnalyzer;
 import androidx.camera.view.CameraController;
-import androidx.camera.view.LifecycleCameraController;
 import androidx.camera.view.PreviewView;
 import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 
 import com.example.eye_tracking_app.databinding.ActivityMainBinding;
-import com.google.android.gms.tasks.Task;
 import com.google.mlkit.vision.camera.CameraSourceConfig;
 import com.google.mlkit.vision.camera.CameraXSource;
 import com.google.mlkit.vision.camera.DetectionTaskCallback;
@@ -36,16 +30,14 @@ import com.google.mlkit.vision.face.FaceDetection;
 import com.google.mlkit.vision.face.FaceDetector;
 import com.google.mlkit.vision.face.FaceDetectorOptions;
 import com.google.mlkit.vision.face.FaceLandmark;
-import com.google.mlkit.vision.interfaces.Detector;
 
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.Toast;
-import android.widget.VideoView;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -65,13 +57,17 @@ public class MainActivity extends AppCompatActivity {
     CameraXSource cameraSource;
     CameraController cameraController;
     PreviewView previewView;
+    ImageView imageViewLeft;
+    ImageView imageViewRight;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 //        cameraController = new LifecycleCameraController(getBaseContext());
-//        PreviewView previewView = findViewById(R.id.previewView);
+        previewView =  (PreviewView) findViewById(R.id.previewView);
+        imageViewLeft = findViewById(R.id.imageView);
+        imageViewRight = findViewById(R.id.imageView3);
 //        previewView.setController(cameraController);
 
 //        previewView =
@@ -199,7 +195,17 @@ public class MainActivity extends AppCompatActivity {
                 FaceLandmark leftEye = ((Face) face).getLandmark(FaceLandmark.LEFT_EYE);
                 FaceLandmark rightEye = ((Face) face).getLandmark(FaceLandmark.RIGHT_EYE);
                 System.out.println(leftEye.getPosition());
+                PointF leftEyePosition = leftEye.getPosition();
                 System.out.println(rightEye.getPosition());
+                PointF rightEyePosition = rightEye.getPosition();
+                Bitmap bitmapka = previewView.getBitmap();
+                Bitmap croppedBitmapLeft = Bitmap.createBitmap(bitmapka, (int) (bitmapka.getWidth() - leftEyePosition.x - 128 ), (int) (leftEyePosition.y - 256), 256, 256);
+//Bitmap croppedBitmap = Bitmap.createBitmap(bitmapka, 100, 100, 256, 256);
+                Bitmap croppedBitmapRight = Bitmap.createBitmap(bitmapka, (int) (bitmapka.getWidth() - rightEyePosition.x - 128 ), (int) (rightEyePosition.y - 256), 256, 256);
+
+
+                imageViewLeft.setImageBitmap(croppedBitmapLeft);
+                imageViewRight.setImageBitmap(croppedBitmapRight);
 
                 showStatus("Eyes Detected and open, so video continues");
 //                if (!videoView.isPlaying())
@@ -242,7 +248,7 @@ public class MainActivity extends AppCompatActivity {
                 .setRequestedPreviewSize(1024, 768)
                 .setFacing(CameraSourceConfig.CAMERA_FACING_FRONT)
                 .build();
-        cameraSource = new CameraXSource(cameraSourceConfig);
+        cameraSource = new CameraXSource(cameraSourceConfig, previewView);
 //        cameraController.se
 
 //        cameraController.setImageAnalysisAnalyzer(ContextCompat.getMainExecutor(this),

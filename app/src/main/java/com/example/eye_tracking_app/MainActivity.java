@@ -5,6 +5,8 @@ package com.example.eye_tracking_app;
 import android.Manifest;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Paint;
 import android.graphics.PointF;
 import android.os.Bundle;
 
@@ -26,6 +28,7 @@ import com.google.mlkit.vision.camera.CameraSourceConfig;
 import com.google.mlkit.vision.camera.CameraXSource;
 import com.google.mlkit.vision.camera.DetectionTaskCallback;
 import com.google.mlkit.vision.face.Face;
+import com.google.mlkit.vision.face.FaceContour;
 import com.google.mlkit.vision.face.FaceDetection;
 import com.google.mlkit.vision.face.FaceDetector;
 import com.google.mlkit.vision.face.FaceDetectorOptions;
@@ -194,16 +197,31 @@ public class MainActivity extends AppCompatActivity {
                 Log.i(TAG, "onUpdate: Eyes Detected");
                 FaceLandmark leftEye = ((Face) face).getLandmark(FaceLandmark.LEFT_EYE);
                 FaceLandmark rightEye = ((Face) face).getLandmark(FaceLandmark.RIGHT_EYE);
-                System.out.println(leftEye.getPosition());
+                FaceContour leftEyeContour = ((Face) face).getContour(FaceContour.LEFT_EYE);
+                FaceContour rightEyeContour =((Face) face).getContour(FaceContour.RIGHT_EYE);
+                System.out.println("Left eye position from landmark: " + leftEye.getPosition());
+                System.out.println("Left eye position from kontur1: " + leftEyeContour.getPoints().get(0));
+                System.out.println("Left eye position from kontur2: " + leftEyeContour.getPoints().get(7));
                 PointF leftEyePosition = leftEye.getPosition();
-                System.out.println(rightEye.getPosition());
+                System.out.println("Right eye position from landmark: " + rightEye.getPosition());
+                System.out.println("Right eye position from kontur1: " + rightEyeContour.getPoints().get(0));
+                System.out.println("Right eye position from kontur2: " + rightEyeContour.getPoints().get(7));
                 PointF rightEyePosition = rightEye.getPosition();
                 Bitmap bitmapka = previewView.getBitmap();
-                Bitmap croppedBitmapLeft = Bitmap.createBitmap(bitmapka, (int) (bitmapka.getWidth() - leftEyePosition.x - 128 ), (int) (leftEyePosition.y - 256), 256, 256);
+//                Bitmap croppedBitmapLeft = Bitmap.createBitmap(bitmapka, (int) (bitmapka.getWidth() - leftEyePosition.x - 64 ), (int) (leftEyePosition.y - 128), 128, 128);
 //Bitmap croppedBitmap = Bitmap.createBitmap(bitmapka, 100, 100, 256, 256);
-                Bitmap croppedBitmapRight = Bitmap.createBitmap(bitmapka, (int) (bitmapka.getWidth() - rightEyePosition.x - 128 ), (int) (rightEyePosition.y - 256), 256, 256);
+//                Bitmap croppedBitmapRight = Bitmap.createBitmap(bitmapka, (int) (bitmapka.getWidth() - rightEyePosition.x - 64 ), (int) (rightEyePosition.y - 128), 128, 128);
+
+//                Bitmap croppedBitmapLeft = Bitmap.createBitmap(bitmapka, (int) (bitmapka.getWidth() - leftEyePosition.x), (int) (bitmapka.getHeight() -leftEyePosition.y), 128, 128);
+//                Bitmap croppedBitmapRight = Bitmap.createBitmap(bitmapka, (int) (bitmapka.getWidth() - rightEyePosition.x), (int) (bitmapka.getHeight() -rightEyePosition.y), 128, 128);
+                Bitmap croppedBitmapLeft = Bitmap.createBitmap(bitmapka, (int) (bitmapka.getWidth() - leftEyePosition.x - 50 - 64), (int) leftEyePosition.y - 150 - 64, 128, 128);
+                Bitmap croppedBitmapRight = Bitmap.createBitmap(bitmapka, (int)(bitmapka.getWidth() -  rightEyePosition.x - 50 - 64), (int) rightEyePosition.y - 150 - 64, 128, 128);
 
 
+//                Canvas canvas = new Canvas(bitmapka);
+//                rightEyeContour.getPoints().stream().forEach(pointt -> canvas.drawCircle(bitmapka.getWidth() - pointt.x - 50,pointt.y - 150,3, new Paint()));
+//                leftEyeContour.getPoints().stream().forEach(pointt -> canvas.drawCircle(bitmapka.getWidth() - pointt.x - 50,pointt.y - 150,3, new Paint()));
+                //                imageViewLeft.setImageBitmap(croppedBitmapLeft);
                 imageViewLeft.setImageBitmap(croppedBitmapLeft);
                 imageViewRight.setImageBitmap(croppedBitmapRight);
 
@@ -232,6 +250,7 @@ public class MainActivity extends AppCompatActivity {
                 .enableTracking()
                 .setClassificationMode(FaceDetectorOptions.CLASSIFICATION_MODE_ALL)
                 .setLandmarkMode(FaceDetectorOptions.LANDMARK_MODE_ALL)
+                .setContourMode(FaceDetectorOptions.CONTOUR_MODE_ALL)
                 .setPerformanceMode(FaceDetectorOptions.PERFORMANCE_MODE_FAST)
                 .build();
         FaceDetector detector = FaceDetection.getClient(options);
@@ -245,7 +264,7 @@ public class MainActivity extends AppCompatActivity {
 
 
         CameraSourceConfig cameraSourceConfig = new CameraSourceConfig.Builder(this, detector, detectionTaskCallback)
-                .setRequestedPreviewSize(1024, 768)
+                .setRequestedPreviewSize(1080, 960)
                 .setFacing(CameraSourceConfig.CAMERA_FACING_FRONT)
                 .build();
         cameraSource = new CameraXSource(cameraSourceConfig, previewView);

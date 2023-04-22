@@ -193,12 +193,16 @@ public class MainActivity extends AppCompatActivity {
         if (((List) faceList).size() > 0) {
             Face face = ((List<Face>) faceList).get(0);
 //        Face face = results.get(0);
-            if ((face.getLeftEyeOpenProbability() > THRESHOLD || ((Face) face).getRightEyeOpenProbability() > THRESHOLD)) {
+            if (face.getLeftEyeOpenProbability() == null || face.getRightEyeOpenProbability() == null)
+                return;
+            if ((face.getLeftEyeOpenProbability() > THRESHOLD || face.getRightEyeOpenProbability() > THRESHOLD)) {
                 Log.i(TAG, "onUpdate: Eyes Detected");
-                FaceLandmark leftEye = ((Face) face).getLandmark(FaceLandmark.LEFT_EYE);
-                FaceLandmark rightEye = ((Face) face).getLandmark(FaceLandmark.RIGHT_EYE);
-                FaceContour leftEyeContour = ((Face) face).getContour(FaceContour.LEFT_EYE);
-                FaceContour rightEyeContour =((Face) face).getContour(FaceContour.RIGHT_EYE);
+                FaceLandmark leftEye = face.getLandmark(FaceLandmark.LEFT_EYE);
+                FaceLandmark rightEye = face.getLandmark(FaceLandmark.RIGHT_EYE);
+                FaceContour leftEyeContour = face.getContour(FaceContour.LEFT_EYE);
+                FaceContour rightEyeContour = face.getContour(FaceContour.RIGHT_EYE);
+                if (leftEyeContour == null || rightEyeContour == null)
+                    return;
                 System.out.println("Left eye position from landmark: " + leftEye.getPosition());
                 System.out.println("Left eye position from kontur1: " + leftEyeContour.getPoints().get(0));
                 System.out.println("Left eye position from kontur2: " + leftEyeContour.getPoints().get(7));
@@ -214,8 +218,14 @@ public class MainActivity extends AppCompatActivity {
 
 //                Bitmap croppedBitmapLeft = Bitmap.createBitmap(bitmapka, (int) (bitmapka.getWidth() - leftEyePosition.x), (int) (bitmapka.getHeight() -leftEyePosition.y), 128, 128);
 //                Bitmap croppedBitmapRight = Bitmap.createBitmap(bitmapka, (int) (bitmapka.getWidth() - rightEyePosition.x), (int) (bitmapka.getHeight() -rightEyePosition.y), 128, 128);
-                Bitmap croppedBitmapLeft = Bitmap.createBitmap(bitmapka, (int) (bitmapka.getWidth() - leftEyePosition.x - 50 - 64), (int) leftEyePosition.y - 150 - 64, 128, 128);
-                Bitmap croppedBitmapRight = Bitmap.createBitmap(bitmapka, (int)(bitmapka.getWidth() -  rightEyePosition.x - 50 - 64), (int) rightEyePosition.y - 150 - 64, 128, 128);
+                int leftEyeImageX = Math.min(Math.max(0, (int) (bitmapka.getWidth() - leftEyePosition.x - 50 - 64)), bitmapka.getWidth()- 128);
+                int leftEyeImageY = Math.min(Math.max(0, (int) leftEyePosition.y - 150 - 64), bitmapka.getHeight()- 128);
+
+                int rightEyeImageX = Math.min(Math.max(0, (int) (bitmapka.getWidth() - rightEyePosition.x - 50 - 64)), bitmapka.getWidth()- 128);
+                int rightEyeImageY = Math.min(Math.max(0, (int) rightEyePosition.y - 150 - 64), bitmapka.getHeight()- 128);
+
+                Bitmap croppedBitmapLeft = Bitmap.createBitmap(bitmapka, leftEyeImageX, leftEyeImageY, 128, 128);
+                Bitmap croppedBitmapRight = Bitmap.createBitmap(bitmapka, rightEyeImageX, rightEyeImageY, 128, 128);
 
 
 //                Canvas canvas = new Canvas(bitmapka);

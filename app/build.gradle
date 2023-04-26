@@ -48,4 +48,9 @@ dependencies {
     def lifecycle_version = "2.4.0"
     implementation "androidx.lifecycle:lifecycle-viewmodel:$lifecycle_version"
     implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycle_version"
+
+    // Tensorflow Lite dependencies for Google Play services
+    implementation 'com.google.android.gms:play-services-tflite-java:16.0.1'
+    // Optional: include Tensorflow Lite Support Library
+    implementation 'com.google.android.gms:play-services-tflite-support:16.0.1'
 }

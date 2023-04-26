@@ -24,6 +24,8 @@ import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 
 import com.example.eye_tracking_app.databinding.ActivityMainBinding;
+import com.google.android.gms.tasks.Task;
+import com.google.android.gms.tflite.java.TfLite;
 import com.google.mlkit.vision.camera.CameraSourceConfig;
 import com.google.mlkit.vision.camera.CameraXSource;
 import com.google.mlkit.vision.camera.DetectionTaskCallback;
@@ -40,6 +42,8 @@ import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
+
+import org.tensorflow.lite.InterpreterApi;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -63,10 +67,29 @@ public class MainActivity extends AppCompatActivity {
     ImageView imageViewLeft;
     ImageView imageViewRight;
 
+    private InterpreterApi interpreter;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+//        Task<Void> initializeTask = TfLite.initialize(this);
+//
+//        initializeTask.addOnSuccessListener(a -> {
+//                    interpreter = InterpreterApi.create(modelBuffer,
+//                            new InterpreterApi.Options().setRuntime(InterpreterApi.Options.TfLiteRuntime.FROM_SYSTEM_ONLY));
+//                })
+//                .addOnFailureListener(e -> {
+//                    Log.e("Interpreter", String.format("Cannot initialize interpreter: %s",
+//                            e.getMessage()));
+//                });
+
+
+
+
+
+
+
 //        cameraController = new LifecycleCameraController(getBaseContext());
         previewView =  (PreviewView) findViewById(R.id.previewView);
         imageViewLeft = findViewById(R.id.imageView);
@@ -218,6 +241,7 @@ public class MainActivity extends AppCompatActivity {
 
 //                Bitmap croppedBitmapLeft = Bitmap.createBitmap(bitmapka, (int) (bitmapka.getWidth() - leftEyePosition.x), (int) (bitmapka.getHeight() -leftEyePosition.y), 128, 128);
 //                Bitmap croppedBitmapRight = Bitmap.createBitmap(bitmapka, (int) (bitmapka.getWidth() - rightEyePosition.x), (int) (bitmapka.getHeight() -rightEyePosition.y), 128, 128);
+
                 int leftEyeImageX = Math.min(Math.max(0, (int) (bitmapka.getWidth() - leftEyePosition.x - 50 - 64)), bitmapka.getWidth()- 128);
                 int leftEyeImageY = Math.min(Math.max(0, (int) leftEyePosition.y - 150 - 64), bitmapka.getHeight()- 128);
 
@@ -229,13 +253,13 @@ public class MainActivity extends AppCompatActivity {
 
 
 //                Canvas canvas = new Canvas(bitmapka);
-//                rightEyeContour.getPoints().stream().forEach(pointt -> canvas.drawCircle(bitmapka.getWidth() - pointt.x - 50,pointt.y - 150,3, new Paint()));
-//                leftEyeContour.getPoints().stream().forEach(pointt -> canvas.drawCircle(bitmapka.getWidth() - pointt.x - 50,pointt.y - 150,3, new Paint()));
-                //                imageViewLeft.setImageBitmap(croppedBitmapLeft);
+//                rightEyeContour.getPoints().stream().forEach(pointt -> canvas.drawCircle(bitmapka.getWidth() - pointt.x  - 50,pointt.y - 150,3, new Paint()));
+//                leftEyeContour.getPoints().stream().forEach(pointt -> canvas.drawCircle(bitmapka.getWidth() - pointt.x  - 50,pointt.y - 150,3, new Paint()));
+//                imageViewLeft.setImageBitmap(bitmapka);
                 imageViewLeft.setImageBitmap(croppedBitmapLeft);
                 imageViewRight.setImageBitmap(croppedBitmapRight);
 
-                showStatus("Eyes Detected and open, so video continues");
+                showStatus("Eyes Detected and open");
 //                if (!videoView.isPlaying())
 //                    videoView.start();
 
@@ -243,7 +267,7 @@ public class MainActivity extends AppCompatActivity {
 //                if (videoView.isPlaying())
 //                    videoView.pause();
 
-                showStatus("Eyes Detected and closed, so video paused");
+                showStatus("Eyes Detected and closed");
             }
         } else {
             showStatus("Face Not Detected yet!");
@@ -264,15 +288,11 @@ public class MainActivity extends AppCompatActivity {
                 .setPerformanceMode(FaceDetectorOptions.PERFORMANCE_MODE_FAST)
                 .build();
         FaceDetector detector = FaceDetection.getClient(options);
-//        detector.
-//        detector.setProcessor(new MultiProcessor.Builder(new FaceTrackerFactory()).build());
         DetectionTaskCallback detectionTaskCallback =
                 detectionTask ->
                         detectionTask
                                 .addOnSuccessListener(this::onDetectionTaskSuccess)
                                 .addOnFailureListener(this::onDetectionTaskFailure);
-
-
         CameraSourceConfig cameraSourceConfig = new CameraSourceConfig.Builder(this, detector, detectionTaskCallback)
                 .setRequestedPreviewSize(1080, 960)
                 .setFacing(CameraSourceConfig.CAMERA_FACING_FRONT)

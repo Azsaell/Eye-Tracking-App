@@ -45,6 +45,7 @@ import android.widget.Toast;
 
 import org.tensorflow.lite.InterpreterApi;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -73,19 +74,19 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-//        Task<Void> initializeTask = TfLite.initialize(this);
-//
-//        initializeTask.addOnSuccessListener(a -> {
-//                    interpreter = InterpreterApi.create(modelBuffer,
-//                            new InterpreterApi.Options().setRuntime(InterpreterApi.Options.TfLiteRuntime.FROM_SYSTEM_ONLY));
-//                })
-//                .addOnFailureListener(e -> {
-//                    Log.e("Interpreter", String.format("Cannot initialize interpreter: %s",
-//                            e.getMessage()));
-//                });
+        Task<Void> initializeTask = TfLite.initialize(this);
+        File model = new File("model2.tflite");
+        System.out.println(model.getName());
 
-
-
+        initializeTask.addOnSuccessListener(a -> {
+                    interpreter = InterpreterApi.create(model,
+                            new InterpreterApi.Options().setRuntime(InterpreterApi.Options.TfLiteRuntime.FROM_SYSTEM_ONLY));
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("Interpreter", String.format("Cannot initialize interpreter: %s",
+                            e.getMessage()));
+                });
+        System.out.println(interpreter);
 
 
 

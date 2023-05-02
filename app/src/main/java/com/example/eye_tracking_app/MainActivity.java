@@ -4,6 +4,7 @@ package com.example.eye_tracking_app;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
+import android.content.res.AssetFileDescriptor;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
@@ -46,6 +47,10 @@ import android.widget.Toast;
 import org.tensorflow.lite.InterpreterApi;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.nio.MappedByteBuffer;
+import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -75,17 +80,23 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         Task<Void> initializeTask = TfLite.initialize(this);
-        File model = new File("model2.tflite");
-        System.out.println(model.getName());
+//        File model = new File("app//main/java/com/example/eye_tracking_app/model.tflite");
+        try {
+            MappedByteBuffer  model = loadModelFile();
+            initializeTask.addOnSuccessListener(a -> {
+                        interpreter = InterpreterApi.create(model,
+                                new InterpreterApi.Options().setRuntime(InterpreterApi.Options.TfLiteRuntime.FROM_SYSTEM_ONLY));
+                    })
+                    .addOnFailureListener(e -> {
+                        Log.e("Interpreter", String.format("Cannot initialize interpreter: %s",
+                                e.getMessage()));
+                    });
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
-        initializeTask.addOnSuccessListener(a -> {
-                    interpreter = InterpreterApi.create(model,
-                            new InterpreterApi.Options().setRuntime(InterpreterApi.Options.TfLiteRuntime.FROM_SYSTEM_ONLY));
-                })
-                .addOnFailureListener(e -> {
-                    Log.e("Interpreter", String.format("Cannot initialize interpreter: %s",
-                            e.getMessage()));
-                });
+
+
         System.out.println(interpreter);
 
 
@@ -131,6 +142,15 @@ public class MainActivity extends AppCompatActivity {
 //                        .setAction("Action", null).show();
 //            }
 //        });
+    }
+
+    private MappedByteBuffer loadModelFile() throws IOException {
+        AssetFileDescriptor fileDescriptor = getAssets().openFd("model.tflite");
+        FileInputStream inputStream = new  FileInputStream(fileDescriptor.getFileDescriptor());
+        FileChannel fileChannel = inputStream.getChannel();
+        long startOffset = fileDescriptor.getStartOffset();
+        long declaredLength = fileDescriptor.getDeclaredLength();
+        return fileChannel.map(FileChannel.MapMode.READ_ONLY, startOffset, declaredLength);
     }
 
     @Override

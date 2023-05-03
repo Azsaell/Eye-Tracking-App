@@ -7,6 +7,8 @@ import android.content.pm.PackageManager;
 import android.content.res.AssetFileDescriptor;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.PointF;
 import android.os.Bundle;
@@ -49,10 +51,14 @@ import org.tensorflow.lite.InterpreterApi;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.ByteOrder;
+import java.nio.FloatBuffer;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -81,11 +87,52 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         Task<Void> initializeTask = TfLite.initialize(this);
 //        File model = new File("app//main/java/com/example/eye_tracking_app/model.tflite");
+        Map<Integer, Object> map_of_indices_to_outputs = new HashMap <>();
+        FloatBuffer ith_output = FloatBuffer.allocate(2);
+        float [] [] output = new float[1][2];
+        map_of_indices_to_outputs.put(0, ith_output);
+        map_of_indices_to_outputs.put(0, output);
+
+        float [] [] [] [] matrix = new float  [1] [3] [128] [128];
+
+        for (int i=0; i<matrix.length; i++) {
+            for (int j=0; j<matrix[i].length; j++) {
+                for (int k=0; k<matrix[i][j].length; k++) {
+                    matrix[0][i][j][k] = (float) (Math.random());
+                }
+            }
+        }
+        float [] [] [] [] eyeR = matrix;
+
+        for (int i=0; i<matrix.length; i++) {
+            for (int j=0; j<matrix[i].length; j++) {
+                for (int k=0; k<matrix[i][j].length; k++) {
+                    matrix[0][i][j][k] = (float) (Math.random());
+                }
+            }
+        }
+        float [] [] [] [] eyeL = matrix;
+
+        float [] lm = new float [8];
+
+        for (int i=0; i<lm.length; i++) {
+            lm[i] = (float) (Math.random());
+
+        }
+
+
+
+
+        Object[] inputs = {eyeR, lm, eyeL};
         try {
             MappedByteBuffer  model = loadModelFile();
             initializeTask.addOnSuccessListener(a -> {
                         interpreter = InterpreterApi.create(model,
                                 new InterpreterApi.Options().setRuntime(InterpreterApi.Options.TfLiteRuntime.FROM_SYSTEM_ONLY));
+                        interpreter.runForMultipleInputsOutputs(inputs,map_of_indices_to_outputs);
+                        System.out.println(((float [] []) map_of_indices_to_outputs.get(0)));
+                        System.out.println(output);
+                        System.out.println(ith_output.get());
                     })
                     .addOnFailureListener(e -> {
                         Log.e("Interpreter", String.format("Cannot initialize interpreter: %s",
@@ -247,13 +294,13 @@ public class MainActivity extends AppCompatActivity {
                 FaceContour rightEyeContour = face.getContour(FaceContour.RIGHT_EYE);
                 if (leftEyeContour == null || rightEyeContour == null)
                     return;
-                System.out.println("Left eye position from landmark: " + leftEye.getPosition());
-                System.out.println("Left eye position from kontur1: " + leftEyeContour.getPoints().get(0));
-                System.out.println("Left eye position from kontur2: " + leftEyeContour.getPoints().get(7));
+//                System.out.println("Left eye position from landmark: " + leftEye.getPosition());
+//                System.out.println("Left eye position from kontur1: " + leftEyeContour.getPoints().get(0));
+//                System.out.println("Left eye position from kontur2: " + leftEyeContour.getPoints().get(7));
                 PointF leftEyePosition = leftEye.getPosition();
-                System.out.println("Right eye position from landmark: " + rightEye.getPosition());
-                System.out.println("Right eye position from kontur1: " + rightEyeContour.getPoints().get(0));
-                System.out.println("Right eye position from kontur2: " + rightEyeContour.getPoints().get(7));
+//                System.out.println("Right eye position from landmark: " + rightEye.getPosition());
+//                System.out.println("Right eye position from kontur1: " + rightEyeContour.getPoints().get(0));
+//                System.out.println("Right eye position from kontur2: " + rightEyeContour.getPoints().get(7));
                 PointF rightEyePosition = rightEye.getPosition();
                 Bitmap bitmapka = previewView.getBitmap();
 //                Bitmap croppedBitmapLeft = Bitmap.createBitmap(bitmapka, (int) (bitmapka.getWidth() - leftEyePosition.x - 64 ), (int) (leftEyePosition.y - 128), 128, 128);
@@ -272,15 +319,57 @@ public class MainActivity extends AppCompatActivity {
                 Bitmap croppedBitmapLeft = Bitmap.createBitmap(bitmapka, leftEyeImageX, leftEyeImageY, 128, 128);
                 Bitmap croppedBitmapRight = Bitmap.createBitmap(bitmapka, rightEyeImageX, rightEyeImageY, 128, 128);
 
+//                croppedBitmapRight = createFlippedBitmap(croppedBitmapRight,true,false);
+                croppedBitmapLeft = createFlippedBitmap(croppedBitmapLeft,true,false);
 
-//                Canvas canvas = new Canvas(bitmapka);
-//                rightEyeContour.getPoints().stream().forEach(pointt -> canvas.drawCircle(bitmapka.getWidth() - pointt.x  - 50,pointt.y - 150,3, new Paint()));
+
+                int [] pixele = new int[128*128];
+                croppedBitmapRight.getPixels(pixele,0,128,0,0,croppedBitmapRight.getWidth(),croppedBitmapRight.getHeight()); //wykorzystać to zamiast cloppowania bitmapy
+                float [][][][] arrayRightEye= convertPixelsToArray(pixele);
+                croppedBitmapLeft.getPixels(pixele,0,128,0,0,croppedBitmapRight.getWidth(),croppedBitmapRight.getHeight()); //wykorzystać to zamiast cloppowania bitmapy
+                float [][][][] arrayLeftEye= convertPixelsToArray(pixele);
+
+
+
+                float [][] lm = new float[1][8];
+//                lm[0][0] = (bitmapka.getWidth() - leftEyeContour.getPoints().get(0).x - 50)/bitmapka.getWidth();
+//                lm[0][1] = (leftEyeContour.getPoints().get(0).y - 150)/bitmapka.getHeight();
+//                lm[0][2] = (bitmapka.getWidth() - leftEyeContour.getPoints().get(7).x - 50)/bitmapka.getWidth();
+//                lm[0][3] = (leftEyeContour.getPoints().get(7).y - 150)/bitmapka.getHeight();
+//                lm[0][4] = (bitmapka.getWidth() - rightEyeContour.getPoints().get(0).x - 50)/bitmapka.getWidth();
+//                lm[0][5] = (rightEyeContour.getPoints().get(0).y - 150)/bitmapka.getHeight();
+//                lm[0][6] = (bitmapka.getWidth() - rightEyeContour.getPoints().get(7).x - 50)/bitmapka.getWidth();
+//                lm[0][7] = (rightEyeContour.getPoints().get(7).y - 150)/bitmapka.getHeight();
+
+                lm[0][4] = (bitmapka.getWidth() - leftEyeContour.getPoints().get(0).x - 50)/bitmapka.getWidth();
+                lm[0][5] = (leftEyeContour.getPoints().get(0).y - 150)/bitmapka.getHeight();
+                lm[0][6] = (bitmapka.getWidth() - leftEyeContour.getPoints().get(7).x - 50)/bitmapka.getWidth();
+                lm[0][7] = (leftEyeContour.getPoints().get(7).y - 150)/bitmapka.getHeight();
+                lm[0][0] = (bitmapka.getWidth() - rightEyeContour.getPoints().get(0).x - 50)/bitmapka.getWidth();
+                lm[0][1] = (rightEyeContour.getPoints().get(0).y - 150)/bitmapka.getHeight();
+                lm[0][2] = (bitmapka.getWidth() - rightEyeContour.getPoints().get(7).x - 50)/bitmapka.getWidth();
+                lm[0][3] = (rightEyeContour.getPoints().get(7).y - 150)/bitmapka.getHeight();
+
+//                Object[] inputs = {arrayRightEye, lm, arrayLeftEye};
+                Object[] inputs = {arrayLeftEye, lm, arrayRightEye};
+                Map<Integer, Object> map_of_indices_to_outputs = new HashMap <>();
+                float [] [] output = new float[1][2];
+                map_of_indices_to_outputs.put(0, output);
+
+                interpreter.runForMultipleInputsOutputs(inputs,map_of_indices_to_outputs);
+                System.out.println(output[0][0]);
+                System.out.println(output[0][1]);
+
+
+
+                Canvas canvas = new Canvas(bitmapka);
+                rightEyeContour.getPoints().stream().forEach(pointt -> canvas.drawCircle(bitmapka.getWidth() - pointt.x  - 50,pointt.y - 150,3, new Paint()));
 //                leftEyeContour.getPoints().stream().forEach(pointt -> canvas.drawCircle(bitmapka.getWidth() - pointt.x  - 50,pointt.y - 150,3, new Paint()));
 //                imageViewLeft.setImageBitmap(bitmapka);
                 imageViewLeft.setImageBitmap(croppedBitmapLeft);
                 imageViewRight.setImageBitmap(croppedBitmapRight);
 
-                showStatus("Eyes Detected and open");
+                showStatus("Eyes Detected and open. X? = " +output[0][0] + "  Y? = " + output[0][1]);
 //                if (!videoView.isPlaying())
 //                    videoView.start();
 
@@ -295,6 +384,26 @@ public class MainActivity extends AppCompatActivity {
         }
 
     }
+
+    public static Bitmap createFlippedBitmap(Bitmap source, boolean xFlip, boolean yFlip) {
+        Matrix matrix = new Matrix();
+        matrix.postScale(xFlip ? -1 : 1, yFlip ? -1 : 1, source.getWidth() / 2f, source.getHeight() / 2f);
+        return Bitmap.createBitmap(source, 0, 0, source.getWidth(), source.getHeight(), matrix, true);
+    }
+
+    public static float[][][][] convertPixelsToArray(int [] pixels) {
+        float[][][][] p = new float[1][3][128][128];
+            for (int j = 0; j<128;j++){
+                for (int k = 0; k<128;k++){
+                    p[0][0][j][k] = ((float) Color.red(pixels[(j*128)+k]))/255;
+                    p[0][1][j][k] = ((float) Color.green(pixels[(j*128)+k]))/255;
+                    p[0][2][j][k] = ((float) Color.blue(pixels[(j*128)+k]))/255;
+                }
+            }
+            return p;
+    }
+
+
 
     private void onDetectionTaskFailure(Exception e) {
 

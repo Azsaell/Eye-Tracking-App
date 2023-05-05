@@ -295,32 +295,44 @@ public class MainActivity extends AppCompatActivity {
                 if (leftEyeContour == null || rightEyeContour == null)
                     return;
 //                System.out.println("Left eye position from landmark: " + leftEye.getPosition());
-//                System.out.println("Left eye position from kontur1: " + leftEyeContour.getPoints().get(0));
-//                System.out.println("Left eye position from kontur2: " + leftEyeContour.getPoints().get(7));
+                System.out.println("Left eye position from kontur1: " + leftEyeContour.getPoints().get(0));
+                System.out.println("Left eye position from kontur2: " + leftEyeContour.getPoints().get(7));
                 PointF leftEyePosition = leftEye.getPosition();
 //                System.out.println("Right eye position from landmark: " + rightEye.getPosition());
-//                System.out.println("Right eye position from kontur1: " + rightEyeContour.getPoints().get(0));
-//                System.out.println("Right eye position from kontur2: " + rightEyeContour.getPoints().get(7));
+                System.out.println("Right eye position from kontur1: " + rightEyeContour.getPoints().get(0));
+                System.out.println("Right eye position from kontur2: " + rightEyeContour.getPoints().get(7));
                 PointF rightEyePosition = rightEye.getPosition();
                 Bitmap bitmapka = previewView.getBitmap();
-//                Bitmap croppedBitmapLeft = Bitmap.createBitmap(bitmapka, (int) (bitmapka.getWidth() - leftEyePosition.x - 64 ), (int) (leftEyePosition.y - 128), 128, 128);
-//Bitmap croppedBitmap = Bitmap.createBitmap(bitmapka, 100, 100, 256, 256);
-//                Bitmap croppedBitmapRight = Bitmap.createBitmap(bitmapka, (int) (bitmapka.getWidth() - rightEyePosition.x - 64 ), (int) (rightEyePosition.y - 128), 128, 128);
 
-//                Bitmap croppedBitmapLeft = Bitmap.createBitmap(bitmapka, (int) (bitmapka.getWidth() - leftEyePosition.x), (int) (bitmapka.getHeight() -leftEyePosition.y), 128, 128);
-//                Bitmap croppedBitmapRight = Bitmap.createBitmap(bitmapka, (int) (bitmapka.getWidth() - rightEyePosition.x), (int) (bitmapka.getHeight() -rightEyePosition.y), 128, 128);
+//                float leftEyeWidth = leftEyeContour.getPoints().get(7).x - leftEyeContour.getPoints().get(0).x;
+//                float rightEyeWidth = rightEyeContour.getPoints().get(7).x - rightEyeContour.getPoints().get(0).x;
 
-                int leftEyeImageX = Math.min(Math.max(0, (int) (bitmapka.getWidth() - leftEyePosition.x - 50 - 64)), bitmapka.getWidth()- 128);
+//                int leftEyeImageX = (int) Math.min(Math.max(0, (bitmapka.getWidth() - leftEyePosition.x - 70 - leftEyeWidth/2)), bitmapka.getWidth()- leftEyeWidth);
+//                int leftEyeImageY = (int) Math.min(Math.max(0, (leftEyePosition.y - 150 - leftEyeWidth/2)), bitmapka.getHeight()- leftEyeWidth);
+//
+//                int rightEyeImageX = (int) Math.min(Math.max(0, (bitmapka.getWidth() - rightEyePosition.x - 70 - rightEyeWidth/2)), bitmapka.getWidth()- rightEyeWidth);
+//                int rightEyeImageY = (int) Math.min(Math.max(0,  rightEyePosition.y - 150 - rightEyeWidth/2), bitmapka.getHeight()- rightEyeWidth);
+
+
+                int leftEyeImageX = Math.min(Math.max(0, (int) (bitmapka.getWidth() - leftEyePosition.x - 70 - 64)), bitmapka.getWidth()- 128);
                 int leftEyeImageY = Math.min(Math.max(0, (int) leftEyePosition.y - 150 - 64), bitmapka.getHeight()- 128);
 
-                int rightEyeImageX = Math.min(Math.max(0, (int) (bitmapka.getWidth() - rightEyePosition.x - 50 - 64)), bitmapka.getWidth()- 128);
+                int rightEyeImageX = Math.min(Math.max(0, (int) (bitmapka.getWidth() - rightEyePosition.x - 70 - 64)), bitmapka.getWidth()- 128);
                 int rightEyeImageY = Math.min(Math.max(0, (int) rightEyePosition.y - 150 - 64), bitmapka.getHeight()- 128);
+
+
 
                 Bitmap croppedBitmapLeft = Bitmap.createBitmap(bitmapka, leftEyeImageX, leftEyeImageY, 128, 128);
                 Bitmap croppedBitmapRight = Bitmap.createBitmap(bitmapka, rightEyeImageX, rightEyeImageY, 128, 128);
 
+//                Bitmap croppedBitmapLeft = Bitmap.createBitmap(bitmapka, leftEyeImageX, leftEyeImageY, (int) leftEyeWidth, (int) leftEyeWidth);
+//                Bitmap croppedBitmapRight = Bitmap.createBitmap(bitmapka, rightEyeImageX, rightEyeImageY, (int) rightEyeWidth, (int) rightEyeWidth);
+
 //                croppedBitmapRight = createFlippedBitmap(croppedBitmapRight,true,false);
-                croppedBitmapLeft = createFlippedBitmap(croppedBitmapLeft,true,false);
+                croppedBitmapLeft = createFlippedBitmap(croppedBitmapLeft,true,false);  //to je dobre vhyaba
+//
+//                croppedBitmapLeft = getResizedBitmap(croppedBitmapLeft, 128, 128);
+//                croppedBitmapRight = getResizedBitmap(croppedBitmapRight, 128, 128);
 
 
                 int [] pixele = new int[128*128];
@@ -332,23 +344,14 @@ public class MainActivity extends AppCompatActivity {
 
 
                 float [][] lm = new float[1][8];
-//                lm[0][0] = (bitmapka.getWidth() - leftEyeContour.getPoints().get(0).x - 50)/bitmapka.getWidth();
-//                lm[0][1] = (leftEyeContour.getPoints().get(0).y - 150)/bitmapka.getHeight();
-//                lm[0][2] = (bitmapka.getWidth() - leftEyeContour.getPoints().get(7).x - 50)/bitmapka.getWidth();
-//                lm[0][3] = (leftEyeContour.getPoints().get(7).y - 150)/bitmapka.getHeight();
-//                lm[0][4] = (bitmapka.getWidth() - rightEyeContour.getPoints().get(0).x - 50)/bitmapka.getWidth();
-//                lm[0][5] = (rightEyeContour.getPoints().get(0).y - 150)/bitmapka.getHeight();
-//                lm[0][6] = (bitmapka.getWidth() - rightEyeContour.getPoints().get(7).x - 50)/bitmapka.getWidth();
-//                lm[0][7] = (rightEyeContour.getPoints().get(7).y - 150)/bitmapka.getHeight();
-
-                lm[0][4] = (bitmapka.getWidth() - leftEyeContour.getPoints().get(0).x - 50)/bitmapka.getWidth();
-                lm[0][5] = (leftEyeContour.getPoints().get(0).y - 150)/bitmapka.getHeight();
-                lm[0][6] = (bitmapka.getWidth() - leftEyeContour.getPoints().get(7).x - 50)/bitmapka.getWidth();
-                lm[0][7] = (leftEyeContour.getPoints().get(7).y - 150)/bitmapka.getHeight();
-                lm[0][0] = (bitmapka.getWidth() - rightEyeContour.getPoints().get(0).x - 50)/bitmapka.getWidth();
-                lm[0][1] = (rightEyeContour.getPoints().get(0).y - 150)/bitmapka.getHeight();
-                lm[0][2] = (bitmapka.getWidth() - rightEyeContour.getPoints().get(7).x - 50)/bitmapka.getWidth();
-                lm[0][3] = (rightEyeContour.getPoints().get(7).y - 150)/bitmapka.getHeight();
+                lm[0][0] = (bitmapka.getWidth() - leftEyeContour.getPoints().get(0).x - 70)/bitmapka.getWidth();
+                lm[0][1] = (leftEyeContour.getPoints().get(0).y - 150)/bitmapka.getHeight();
+                lm[0][2] = (bitmapka.getWidth() - leftEyeContour.getPoints().get(7).x - 70)/bitmapka.getWidth();
+                lm[0][3] = (leftEyeContour.getPoints().get(7).y - 150)/bitmapka.getHeight();
+                lm[0][4] = (bitmapka.getWidth() - rightEyeContour.getPoints().get(0).x - 70)/bitmapka.getWidth();
+                lm[0][5] = (rightEyeContour.getPoints().get(0).y - 150)/bitmapka.getHeight();
+                lm[0][6] = (bitmapka.getWidth() - rightEyeContour.getPoints().get(7).x - 70)/bitmapka.getWidth();
+                lm[0][7] = (rightEyeContour.getPoints().get(7).y - 150)/bitmapka.getHeight();
 
 //                Object[] inputs = {arrayRightEye, lm, arrayLeftEye};
                 Object[] inputs = {arrayLeftEye, lm, arrayRightEye};
@@ -370,12 +373,7 @@ public class MainActivity extends AppCompatActivity {
                 imageViewRight.setImageBitmap(croppedBitmapRight);
 
                 showStatus("Eyes Detected and open. X? = " +output[0][0] + "  Y? = " + output[0][1]);
-//                if (!videoView.isPlaying())
-//                    videoView.start();
-
             } else {
-//                if (videoView.isPlaying())
-//                    videoView.pause();
 
                 showStatus("Eyes Detected and closed");
             }
@@ -391,13 +389,30 @@ public class MainActivity extends AppCompatActivity {
         return Bitmap.createBitmap(source, 0, 0, source.getWidth(), source.getHeight(), matrix, true);
     }
 
+    public Bitmap getResizedBitmap(Bitmap bm, int newWidth, int newHeight) {
+        int width = bm.getWidth();
+        int height = bm.getHeight();
+        float scaleWidth = ((float) newWidth) / width;
+        float scaleHeight = ((float) newHeight) / height;
+        // CREATE A MATRIX FOR THE MANIPULATION
+        Matrix matrix = new Matrix();
+        // RESIZE THE BIT MAP
+        matrix.postScale(scaleWidth, scaleHeight);
+
+        // "RECREATE" THE NEW BITMAP
+        Bitmap resizedBitmap = Bitmap.createBitmap(
+                bm, 0, 0, width, height, matrix, false);
+        bm.recycle();
+        return resizedBitmap;
+    }
+
     public static float[][][][] convertPixelsToArray(int [] pixels) {
         float[][][][] p = new float[1][3][128][128];
             for (int j = 0; j<128;j++){
                 for (int k = 0; k<128;k++){
-                    p[0][0][j][k] = ((float) Color.red(pixels[(j*128)+k]))/255;
-                    p[0][1][j][k] = ((float) Color.green(pixels[(j*128)+k]))/255;
-                    p[0][2][j][k] = ((float) Color.blue(pixels[(j*128)+k]))/255;
+                    p[0][0][j][k] = (float) (((((float) Color.red(pixels[(j*128)+k]))/255) - 0.3741)/0.02);
+                    p[0][1][j][k] = (float) (((((float) Color.green(pixels[(j*128)+k]))/255) - 0.4076)/0.02);
+                    p[0][2][j][k] = (float) (((((float) Color.blue(pixels[(j*128)+k]))/255) - 0.5425)/0.02);
                 }
             }
             return p;

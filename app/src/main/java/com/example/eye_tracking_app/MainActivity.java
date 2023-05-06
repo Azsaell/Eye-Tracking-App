@@ -14,6 +14,7 @@ import android.graphics.PointF;
 import android.os.Bundle;
 
 
+import android.os.SystemClock;
 import android.util.Log;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -41,10 +42,14 @@ import com.google.mlkit.vision.face.FaceLandmark;
 
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
+import android.view.View;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
+import android.widget.ViewSwitcher;
 
 import org.tensorflow.lite.InterpreterApi;
 
@@ -79,12 +84,26 @@ public class MainActivity extends AppCompatActivity {
     ImageView imageViewLeft;
     ImageView imageViewRight;
 
+    android.widget.ViewSwitcher viewSwitcher;
+
+
+    float [] [] output = new float[1][2];
+
     private InterpreterApi interpreter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+         viewSwitcher = (ViewSwitcher)findViewById(R.id.myViewFlipper);
+
+        ((Button) findViewById(R.id.switch1)).setOnClickListener((View v) -> viewSwitcher.showNext());
+        ((Button) findViewById(R.id.switch2)).setOnClickListener((View v) -> viewSwitcher.showNext());
+
+
+
+
         Task<Void> initializeTask = TfLite.initialize(this);
 //        File model = new File("app//main/java/com/example/eye_tracking_app/model.tflite");
         Map<Integer, Object> map_of_indices_to_outputs = new HashMap <>();
@@ -281,12 +300,13 @@ public class MainActivity extends AppCompatActivity {
 
     private void onDetectionTaskSuccess(Object faceList) {
         final float THRESHOLD = 0.75f;
+
         if (((List) faceList).size() > 0) {
             Face face = ((List<Face>) faceList).get(0);
 //        Face face = results.get(0);
             if (face.getLeftEyeOpenProbability() == null || face.getRightEyeOpenProbability() == null)
                 return;
-            if ((face.getLeftEyeOpenProbability() > THRESHOLD || face.getRightEyeOpenProbability() > THRESHOLD)) {
+            if ((face.getLeftEyeOpenProbability() > THRESHOLD && face.getRightEyeOpenProbability() > THRESHOLD)) {
                 Log.i(TAG, "onUpdate: Eyes Detected");
                 FaceLandmark leftEye = face.getLandmark(FaceLandmark.LEFT_EYE);
                 FaceLandmark rightEye = face.getLandmark(FaceLandmark.RIGHT_EYE);
@@ -304,35 +324,35 @@ public class MainActivity extends AppCompatActivity {
                 PointF rightEyePosition = rightEye.getPosition();
                 Bitmap bitmapka = previewView.getBitmap();
 
-//                float leftEyeWidth = leftEyeContour.getPoints().get(7).x - leftEyeContour.getPoints().get(0).x;
-//                float rightEyeWidth = rightEyeContour.getPoints().get(7).x - rightEyeContour.getPoints().get(0).x;
+                float leftEyeWidth = leftEyeContour.getPoints().get(7).x - leftEyeContour.getPoints().get(0).x + 30;
+                float rightEyeWidth = rightEyeContour.getPoints().get(7).x - rightEyeContour.getPoints().get(0).x + 30;
 
-//                int leftEyeImageX = (int) Math.min(Math.max(0, (bitmapka.getWidth() - leftEyePosition.x - 70 - leftEyeWidth/2)), bitmapka.getWidth()- leftEyeWidth);
-//                int leftEyeImageY = (int) Math.min(Math.max(0, (leftEyePosition.y - 150 - leftEyeWidth/2)), bitmapka.getHeight()- leftEyeWidth);
+                int leftEyeImageX = (int) Math.min(Math.max(0, (bitmapka.getWidth() - leftEyePosition.x - 50 - leftEyeWidth/2)), bitmapka.getWidth()- leftEyeWidth);
+                int leftEyeImageY = (int) Math.min(Math.max(0, (leftEyePosition.y - 170 - leftEyeWidth/2)), bitmapka.getHeight()- leftEyeWidth);
+
+                int rightEyeImageX = (int) Math.min(Math.max(0, (bitmapka.getWidth() - rightEyePosition.x - 50 - rightEyeWidth/2)), bitmapka.getWidth()- rightEyeWidth);
+                int rightEyeImageY = (int) Math.min(Math.max(0,  rightEyePosition.y - 170 - rightEyeWidth/2), bitmapka.getHeight()- rightEyeWidth);
+
+
+//                int leftEyeImageX = Math.min(Math.max(0, (int) (bitmapka.getWidth() - leftEyePosition.x - 70 - 64)), bitmapka.getWidth()- 128);
+//                int leftEyeImageY = Math.min(Math.max(0, (int) leftEyePosition.y - 150 - 64), bitmapka.getHeight()- 128);
 //
-//                int rightEyeImageX = (int) Math.min(Math.max(0, (bitmapka.getWidth() - rightEyePosition.x - 70 - rightEyeWidth/2)), bitmapka.getWidth()- rightEyeWidth);
-//                int rightEyeImageY = (int) Math.min(Math.max(0,  rightEyePosition.y - 150 - rightEyeWidth/2), bitmapka.getHeight()- rightEyeWidth);
-
-
-                int leftEyeImageX = Math.min(Math.max(0, (int) (bitmapka.getWidth() - leftEyePosition.x - 70 - 64)), bitmapka.getWidth()- 128);
-                int leftEyeImageY = Math.min(Math.max(0, (int) leftEyePosition.y - 150 - 64), bitmapka.getHeight()- 128);
-
-                int rightEyeImageX = Math.min(Math.max(0, (int) (bitmapka.getWidth() - rightEyePosition.x - 70 - 64)), bitmapka.getWidth()- 128);
-                int rightEyeImageY = Math.min(Math.max(0, (int) rightEyePosition.y - 150 - 64), bitmapka.getHeight()- 128);
+//                int rightEyeImageX = Math.min(Math.max(0, (int) (bitmapka.getWidth() - rightEyePosition.x - 70 - 64)), bitmapka.getWidth()- 128);
+//                int rightEyeImageY = Math.min(Math.max(0, (int) rightEyePosition.y - 150 - 64), bitmapka.getHeight()- 128);
 
 
 
-                Bitmap croppedBitmapLeft = Bitmap.createBitmap(bitmapka, leftEyeImageX, leftEyeImageY, 128, 128);
-                Bitmap croppedBitmapRight = Bitmap.createBitmap(bitmapka, rightEyeImageX, rightEyeImageY, 128, 128);
+//                Bitmap croppedBitmapLeft = Bitmap.createBitmap(bitmapka, leftEyeImageX, leftEyeImageY, 128, 128);
+//                Bitmap croppedBitmapRight = Bitmap.createBitmap(bitmapka, rightEyeImageX, rightEyeImageY, 128, 128);
 
-//                Bitmap croppedBitmapLeft = Bitmap.createBitmap(bitmapka, leftEyeImageX, leftEyeImageY, (int) leftEyeWidth, (int) leftEyeWidth);
-//                Bitmap croppedBitmapRight = Bitmap.createBitmap(bitmapka, rightEyeImageX, rightEyeImageY, (int) rightEyeWidth, (int) rightEyeWidth);
+                Bitmap croppedBitmapLeft = Bitmap.createBitmap(bitmapka, leftEyeImageX, leftEyeImageY, (int) leftEyeWidth, (int) leftEyeWidth);
+                Bitmap croppedBitmapRight = Bitmap.createBitmap(bitmapka, rightEyeImageX, rightEyeImageY, (int) rightEyeWidth, (int) rightEyeWidth);
 
 //                croppedBitmapRight = createFlippedBitmap(croppedBitmapRight,true,false);
                 croppedBitmapLeft = createFlippedBitmap(croppedBitmapLeft,true,false);  //to je dobre vhyaba
 //
-//                croppedBitmapLeft = getResizedBitmap(croppedBitmapLeft, 128, 128);
-//                croppedBitmapRight = getResizedBitmap(croppedBitmapRight, 128, 128);
+                croppedBitmapLeft = getResizedBitmap(croppedBitmapLeft, 128, 128);
+                croppedBitmapRight = getResizedBitmap(croppedBitmapRight, 128, 128);
 
 
                 int [] pixele = new int[128*128];
@@ -344,19 +364,19 @@ public class MainActivity extends AppCompatActivity {
 
 
                 float [][] lm = new float[1][8];
-                lm[0][0] = (bitmapka.getWidth() - leftEyeContour.getPoints().get(0).x - 70)/bitmapka.getWidth();
-                lm[0][1] = (leftEyeContour.getPoints().get(0).y - 150)/bitmapka.getHeight();
-                lm[0][2] = (bitmapka.getWidth() - leftEyeContour.getPoints().get(7).x - 70)/bitmapka.getWidth();
-                lm[0][3] = (leftEyeContour.getPoints().get(7).y - 150)/bitmapka.getHeight();
-                lm[0][4] = (bitmapka.getWidth() - rightEyeContour.getPoints().get(0).x - 70)/bitmapka.getWidth();
-                lm[0][5] = (rightEyeContour.getPoints().get(0).y - 150)/bitmapka.getHeight();
-                lm[0][6] = (bitmapka.getWidth() - rightEyeContour.getPoints().get(7).x - 70)/bitmapka.getWidth();
-                lm[0][7] = (rightEyeContour.getPoints().get(7).y - 150)/bitmapka.getHeight();
+                lm[0][0] = (bitmapka.getWidth() - leftEyeContour.getPoints().get(0).x - 50)/bitmapka.getWidth();
+                lm[0][1] = (leftEyeContour.getPoints().get(0).y - 170)/bitmapka.getHeight();
+                lm[0][2] = (bitmapka.getWidth() - leftEyeContour.getPoints().get(7).x - 50)/bitmapka.getWidth();
+                lm[0][3] = (leftEyeContour.getPoints().get(7).y - 170)/bitmapka.getHeight();
+                lm[0][4] = (bitmapka.getWidth() - rightEyeContour.getPoints().get(0).x - 50)/bitmapka.getWidth();
+                lm[0][5] = (rightEyeContour.getPoints().get(0).y - 170)/bitmapka.getHeight();
+                lm[0][6] = (bitmapka.getWidth() - rightEyeContour.getPoints().get(7).x - 50)/bitmapka.getWidth();
+                lm[0][7] = (rightEyeContour.getPoints().get(7).y - 170)/bitmapka.getHeight();
 
 //                Object[] inputs = {arrayRightEye, lm, arrayLeftEye};
                 Object[] inputs = {arrayLeftEye, lm, arrayRightEye};
                 Map<Integer, Object> map_of_indices_to_outputs = new HashMap <>();
-                float [] [] output = new float[1][2];
+
                 map_of_indices_to_outputs.put(0, output);
 
                 interpreter.runForMultipleInputsOutputs(inputs,map_of_indices_to_outputs);
@@ -366,19 +386,25 @@ public class MainActivity extends AppCompatActivity {
 
 
                 Canvas canvas = new Canvas(bitmapka);
-                rightEyeContour.getPoints().stream().forEach(pointt -> canvas.drawCircle(bitmapka.getWidth() - pointt.x  - 50,pointt.y - 150,3, new Paint()));
-//                leftEyeContour.getPoints().stream().forEach(pointt -> canvas.drawCircle(bitmapka.getWidth() - pointt.x  - 50,pointt.y - 150,3, new Paint()));
+//                rightEyeContour.getPoints().stream().forEach(pointt -> canvas.drawCircle(bitmapka.getWidth() - pointt.x  - 50,pointt.y - 170,3, new Paint()));
+//                leftEyeContour.getPoints().stream().forEach(pointt -> canvas.drawCircle(bitmapka.getWidth() - pointt.x  - 50,pointt.y - 170,3, new Paint()));
 //                imageViewLeft.setImageBitmap(bitmapka);
                 imageViewLeft.setImageBitmap(croppedBitmapLeft);
                 imageViewRight.setImageBitmap(croppedBitmapRight);
 
                 showStatus("Eyes Detected and open. X? = " +output[0][0] + "  Y? = " + output[0][1]);
+
+
             } else {
+                dispatchTouchEvent(MotionEvent.obtain(
+                        SystemClock.uptimeMillis(), SystemClock.uptimeMillis(),
+                        MotionEvent.ACTION_DOWN, 400-400*output[0][0],-200*(output[0][1]), 0));
 
                 showStatus("Eyes Detected and closed");
             }
         } else {
             showStatus("Face Not Detected yet!");
+
         }
 
     }

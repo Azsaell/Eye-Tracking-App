@@ -407,34 +407,37 @@ public class MainActivity extends AppCompatActivity {
 
                 if(isOurModel){
                     ourInterpreter.runForMultipleInputsOutputs(inputs,map_of_indices_to_outputs);
-                    System.out.println(output[0][0]);
-                    System.out.println(output[0][1]);
-
-
-                    dispatchTouchEvent(MotionEvent.obtain(
-                            SystemClock.uptimeMillis(), SystemClock.uptimeMillis(),
-                            MotionEvent.ACTION_DOWN, 0-800*output[0][0],-300-200*(output[0][1]), 0));
+    
+//                    dispatchTouchEvent(MotionEvent.obtain(
+//                            SystemClock.uptimeMillis(), SystemClock.uptimeMillis(),
+//                            MotionEvent.ACTION_DOWN, 1400-400*output[0][0],200, 0));
                 }
                 else{
                     interpreter.runForMultipleInputsOutputs(inputs,map_of_indices_to_outputs);
-                    System.out.println(output[0][0]);
-                    System.out.println(output[0][1]);
 
-
-                    dispatchTouchEvent(MotionEvent.obtain(
-                            SystemClock.uptimeMillis(), SystemClock.uptimeMillis(),
-                            MotionEvent.ACTION_DOWN, 0-800*output[0][0],-300-200*(output[0][1]), 0));
+//                    dispatchTouchEvent(MotionEvent.obtain(
+//                            SystemClock.uptimeMillis(), SystemClock.uptimeMillis(),
+//                            MotionEvent.ACTION_DOWN, 0-800*output[0][0],-300-200*(output[0][1]), 0));
 
                 }
+                System.out.println(output[0][0]);
+                System.out.println(output[0][1]);
 
                 showStatus("X? = " +output[0][0] + "  Y? = " + output[0][1]  + " Eyes Detected and open. \n ");
 
 
 
             } else {
-                dispatchTouchEvent(MotionEvent.obtain(
-                        SystemClock.uptimeMillis(), SystemClock.uptimeMillis(),
-                        MotionEvent.ACTION_DOWN, 300-400*output[0][0],-300-800*(output[0][1]), 0));
+                if(isOurModel){
+                    dispatchTouchEvent(MotionEvent.obtain(
+                            SystemClock.uptimeMillis(), SystemClock.uptimeMillis(),
+                            MotionEvent.ACTION_DOWN, 1400-400*output[0][0],200, 0));
+                }
+                else{
+                    dispatchTouchEvent(MotionEvent.obtain(
+                            SystemClock.uptimeMillis(), SystemClock.uptimeMillis(),
+                            MotionEvent.ACTION_DOWN, 0-800*output[0][0],-300-200*(output[0][1]), 0));
+                }
 
                 showStatus("X? = " +output[0][0] + "  Y? = " + output[0][1]  + "Eyes Detected and closed");
             }
